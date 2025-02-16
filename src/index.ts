@@ -1,14 +1,18 @@
 import { App } from "@slack/bolt";
 import { OpenAIService } from "./services/openai.service";
+import { config } from "./utils/env";
+import { Leave } from "./models/leave.model";
+import logger from "./libs/logger";
+import connectDB from "./libs/db";
 
-require("dotenv").config();
+connectDB();
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+  token: config.slackBotToken,
   socketMode: true,
-  appToken: process.env.SLACK_APP_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  port: Number(process.env.PORT!) || 3000,
+  appToken: config.slackAppToken,
+  signingSecret: config.slackSigningSecret,
+  port: config.port,
 });
 
 app.message("", async ({ message, say }) => {
@@ -36,6 +40,22 @@ app.message("", async ({ message, say }) => {
   const response = await openaiService.parseLeaveRequest(text, timestamp);
 
   console.log(response);
+
+  // const leave = new Leave({
+  //   user: userResult?.user?.name,
+  //   original_text: text,
+  //   start_time: response?.start_time,
+  //   end_time: response?.end_time,
+  //   duration: response?.duration,
+  //   reason: response?.reason,
+  //   is_working_from_home: response?.is_working_from_home,
+  //   is_leave_request: response?.is_leave_request,
+  //   is_running_late: response?.is_running_late,
+  // });
+
+  // await leave.save();
+
+  // logger.info("Leave saved successfully", leave);
 });
 
 (async () => {

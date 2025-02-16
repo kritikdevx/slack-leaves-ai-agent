@@ -1,17 +1,9 @@
-export interface LeaveDetails {
-  userId: string;
-  startTime: Date;
-  endTime: Date;
-  duration: string;
-  reason?: string;
-  rawMessage: string;
-  created: Date;
-}
-
 export interface OpenAILeaveResponse {
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
   duration: string;
   reason?: string;
-  isWorkingFromHome: boolean;
+  is_leave_request: boolean;
+  is_running_late: boolean;
+  is_working_from_home: boolean;
 }
