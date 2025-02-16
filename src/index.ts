@@ -39,23 +39,21 @@ app.message("", async ({ message, say }) => {
   const openaiService = new OpenAIService();
   const response = await openaiService.parseLeaveRequest(text, timestamp);
 
-  console.log(response);
+  const leave = new Leave({
+    user: userResult?.user?.name,
+    original_text: text,
+    start_time: response?.start_time,
+    end_time: response?.end_time,
+    duration: response?.duration,
+    reason: response?.reason,
+    is_working_from_home: response?.is_working_from_home,
+    is_leave_request: response?.is_leave_request,
+    is_running_late: response?.is_running_late,
+  });
 
-  // const leave = new Leave({
-  //   user: userResult?.user?.name,
-  //   original_text: text,
-  //   start_time: response?.start_time,
-  //   end_time: response?.end_time,
-  //   duration: response?.duration,
-  //   reason: response?.reason,
-  //   is_working_from_home: response?.is_working_from_home,
-  //   is_leave_request: response?.is_leave_request,
-  //   is_running_late: response?.is_running_late,
-  // });
+  await leave.save();
 
-  // await leave.save();
-
-  // logger.info("Leave saved successfully", leave);
+  logger.info("Leave saved successfully", leave);
 });
 
 (async () => {
