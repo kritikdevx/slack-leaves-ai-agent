@@ -22,10 +22,11 @@ export class OpenAIService {
             content: `You are a leave management assistant. Analyze the message and extract the required details based on the following rules:  
             Timestamp of the Message: ${timestamp} (IST)
 
+            ### **Leave Management Assistant**
             **Office Timings:**  
             - **Weekdays (Monday – Friday):** 9:00 AM – 6:00 PM (IST)  
             - **Saturday:** 9:00 AM – 1:00 PM (IST)  
-            - **Sunday:** Office is closed  
+            - **Sunday:** Office is closed
 
             **Response Format:** Return a JSON object with the following keys:
             - \`start_time\`: The starting time of the leave or event (ISO string in IST).
@@ -35,6 +36,7 @@ export class OpenAIService {
             - \`is_working_from_home\`: \`true\` if the user mentions working from home, otherwise \`false\`.
             - \`is_leave_request\`: \`true\` if the message indicates a leave request, otherwise \`false\`.
             - \`is_running_late\`: \`true\` if the user mentions being late, otherwise \`false\`.
+            - \`is_valid\`: \`true\` if the message is not related to leave, rather a fun, greeting, random or non-leave message.
 
             ---
 
@@ -84,6 +86,14 @@ export class OpenAIService {
               - "Will be there by 11 after a call" → **WFH from 9:00 AM – 11:00 AM, WFO from 11:00 AM onwards**.
 
             Ensure all extracted details follow these rules accurately.
+
+            ### **Invalid Messages Rule:**
+            - If the message **does not contain** words related to leave, absence, work from home, or delays, it must be marked as:
+              - \`is_valid: false\`
+              - All other fields should be set to default values.
+              - Example: "Hello, how are you?" → \`is_valid: false\
+              - Example: "Good morning" → \`is_valid: false\
+              - Example: "What's up?" → \`is_valid: false\
             `,
           },
           {

@@ -17,6 +17,8 @@ const app = new App({
   port: config.port,
 });
 
+const openaiService = new OpenAIService();
+
 app.message("", async ({ message, say }) => {
   const ts = message.ts;
   let text = "";
@@ -42,8 +44,12 @@ app.message("", async ({ message, say }) => {
     seconds * 1000 + microseconds / 1000
   ).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
-  const openaiService = new OpenAIService();
   const response = await openaiService.parseLeaveRequest(text, timestamp);
+
+  if (!response?.is_valid) {
+    logger.info("Not a leave request", response);
+    return;
+  }
 
   const leave = new Leave({
     user: userResult?.user?.name,
