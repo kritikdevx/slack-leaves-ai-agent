@@ -18,6 +18,7 @@ export interface ILeave extends Document {
 const leaveSchema = new Schema<ILeave>(
   {
     user: { type: String, required: true, trim: true, lowercase: true },
+    original_text: { type: String, required: true, trim: true },
     start_time: { type: Date, required: true },
     end_time: { type: Date, required: true },
     duration: { type: String, required: true },
