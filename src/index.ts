@@ -7,8 +7,6 @@ import connectDB from "./libs/db";
 
 connectDB();
 
-const TARGET_CHANNEL = "C0720A0C5H9";
-
 const app = new App({
   token: config.slackBotToken,
   socketMode: true,
@@ -22,10 +20,6 @@ const openaiService = new OpenAIService();
 app.message("", async ({ message, say }) => {
   const ts = message.ts;
   let text = "";
-
-  if (message.channel !== TARGET_CHANNEL) {
-    return;
-  }
 
   if (message.type === "message" && !message.subtype) {
     text = message.text || "";
