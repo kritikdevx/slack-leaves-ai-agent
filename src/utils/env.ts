@@ -20,14 +20,4 @@ const envSchema = z.object({
 });
 
 // Parse and validate environment variables
-const env = envSchema.parse(process.env);
-
-export const config = {
-  port: env.PORT,
-  nodeEnv: env.NODE_ENV,
-  openaiApiKey: env.OPENAI_API_KEY,
-  slackSigningSecret: env.SLACK_SIGNING_SECRET,
-  slackAppToken: env.SLACK_APP_TOKEN,
-  slackBotToken: env.SLACK_BOT_TOKEN,
-  pgDatabase: env.DATABASE_URL,
-};
+export const env = envSchema.parse(process.env);

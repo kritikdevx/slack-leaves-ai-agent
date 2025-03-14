@@ -1,14 +1,14 @@
 import { App } from "@slack/bolt";
-import { config } from "./utils/env";
+import { env } from "./utils/env";
 import logger from "./libs/logger";
 import { leaveTask } from "./trigger/leave";
 
 const app = new App({
-  token: config.slackBotToken,
+  token: env.SLACK_BOT_TOKEN,
   socketMode: true,
-  appToken: config.slackAppToken,
-  signingSecret: config.slackSigningSecret,
-  port: config.port,
+  appToken: env.SLACK_APP_TOKEN,
+  signingSecret: env.SLACK_SIGNING_SECRET,
+  port: env.PORT,
 });
 
 app.message("", async ({ message, say }) => {
