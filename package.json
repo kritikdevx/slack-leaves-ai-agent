@@ -1,28 +1,37 @@
 {
-  "name": "divs",
+  "name": "slack-leaves-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "dev": "nodemon src/index.ts",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate dev",
+    "db:studio": "npx prisma studio",
     "watch": "tsc -w"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@langchain/core": "^0.3.42",
+    "@langchain/google-genai": "^0.1.11",
+    "@langchain/openai": "^0.4.4",
+    "@prisma/client": "^6.5.0",
     "@slack/bolt": "^4.2.0",
+    "@trigger.dev/sdk": "^3.3.17",
     "dotenv": "^16.4.7",
-    "mongoose": "^8.10.1",
-    "openai": "^4.77.0",
+    "langchain": "^0.3.19",
     "winston": "^3.17.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@trigger.dev/build": "^3.3.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
     "nodemon": "^3.1.9",
+    "prisma": "^6.5.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
