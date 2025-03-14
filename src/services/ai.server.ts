@@ -99,6 +99,7 @@ export class AIService {
           LeaveType.OTHER,
         ]),
         original_text: z.string(), // The original message
+        duration_in_seconds: z.number(),
       });
 
       // Create the system prompt for leave request parsing with proper escaping
@@ -123,6 +124,7 @@ export class AIService {
         - \`reason\`: The reason for leave (if provided), otherwise null
         - \`type\`: Auto-determined as one of: "WFH", "RUNNING_LATE", "SICK", "VACATION", "OTHER"
         - \`original_text\`: Include the original message text here
+        - \`duration_in_seconds\`: Duration of the leave in seconds (calculated from start_at and end_at)
         
         ### **Time Parsing Rules:**
         1. **Out-of-Office Request Handling:**

@@ -1,4 +1,4 @@
-import { logger, schemaTask, wait } from "@trigger.dev/sdk/v3";
+import { logger, schemaTask } from "@trigger.dev/sdk/v3";
 import { z } from "zod";
 import { AIService } from "../services/ai.server";
 import { prisma } from "../services/db.server";

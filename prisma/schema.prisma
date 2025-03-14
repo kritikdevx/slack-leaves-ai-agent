@@ -14,13 +14,14 @@ datasource db {
 }
 
 model Leave {
-  id            String   @id @default(cuid())
-  username      String
-  start_at      DateTime
-  end_at        DateTime
-  reason        String
-  duration      String
-  original_text String
+  id                  String   @id @default(cuid())
+  username            String
+  start_at            DateTime
+  end_at              DateTime
+  reason              String
+  duration            String
+  original_text       String
+  duration_in_seconds Int      @default(0)
 
   type LeaveType @default(OTHER)
 
