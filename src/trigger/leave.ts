@@ -44,27 +44,39 @@ export const leaveTask = schemaTask({
 
     logger.log("Leave message parsed", { leaveRequest });
 
-    // Check if the leave request already exists with the same username and date range
-    const existingLeave = await prisma.leave.findFirst({
+    const username = payload.username;
+    const startAt = new Date(leaveRequest.start_at).toISOString();
+    const endAt = new Date(leaveRequest.end_at).toISOString();
+
+    // check for overlapping leave requests
+    const overlappingLeave = await prisma.leave.findFirst({
       where: {
-        username: payload.username,
-        OR: [
-          { start_at: { not: leaveRequest.start_at } },
-          { end_at: { not: leaveRequest.end_at } },
+        username,
+        AND: [
+          {
+            start_at: {
+              lte: endAt, // Starts before or exactly when the new leave ends
+            },
+          },
+          {
+            end_at: {
+              gte: startAt, // Ends after or exactly when the new leave starts
+            },
+          },
         ],
       },
     });
 
     let leave: Leave;
 
-    if (existingLeave) {
-      logger.log("Leave request already exists", { existingLeave });
+    if (overlappingLeave) {
+      logger.log("Leave request already exists", { overlappingLeave });
       // Update the leave request
       leave = await prisma.leave.update({
-        where: { id: existingLeave.id },
+        where: { id: overlappingLeave.id },
         data: {
           ...leaveRequest,
-          username: payload.username,
+          username,
         },
       });
     } else {
@@ -73,7 +85,7 @@ export const leaveTask = schemaTask({
       leave = await prisma.leave.create({
         data: {
           ...leaveRequest,
-          username: payload.username,
+          username,
         },
       });
     }

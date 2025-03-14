@@ -8,6 +8,7 @@
     "dev": "nodemon src/index.ts",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev",
+    "db:studio": "npx prisma studio",
     "watch": "tsc -w"
   },
   "author": "",
