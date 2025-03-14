@@ -1,11 +1,7 @@
 import { App } from "@slack/bolt";
-import { OpenAIService } from "./services/openai.service";
-import { Leave } from "./models/leave.model";
 import { config } from "./utils/env";
 import logger from "./libs/logger";
-import connectDB from "./libs/db";
-
-connectDB();
+import { leaveTask } from "./trigger/leave";
 
 const app = new App({
   token: config.slackBotToken,
@@ -14,8 +10,6 @@ const app = new App({
   signingSecret: config.slackSigningSecret,
   port: config.port,
 });
-
-const openaiService = new OpenAIService();
 
 app.message("", async ({ message, say }) => {
   const ts = message.ts;
@@ -33,33 +27,13 @@ app.message("", async ({ message, say }) => {
     });
   }
 
-  const [seconds, microseconds] = ts.split(".").map(Number);
-  const timestamp = new Date(
-    seconds * 1000 + microseconds / 1000
-  ).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  logger.info("Message", { text, ts, userResult });
 
-  const response = await openaiService.parseLeaveRequest(text, timestamp);
-
-  if (!response?.is_valid) {
-    logger.info("Not a leave request", response);
-    return;
-  }
-
-  const leave = new Leave({
-    user: userResult?.user?.name,
-    original_text: text,
-    start_time: response?.start_time,
-    end_time: response?.end_time,
-    duration: response?.duration,
-    reason: response?.reason,
-    is_working_from_home: response?.is_working_from_home,
-    is_leave_request: response?.is_leave_request,
-    is_running_late: response?.is_running_late,
+  await leaveTask.trigger({
+    username: userResult?.user?.name || "Unknown",
+    message: text,
+    timestamp: ts,
   });
-
-  await leave.save();
-
-  logger.info("Leave saved successfully", leave);
 });
 
 (async () => {

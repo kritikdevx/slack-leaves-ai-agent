@@ -12,11 +12,11 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  MONGODB_URI: z.string().url(),
   OPENAI_API_KEY: z.string().min(1),
   SLACK_SIGNING_SECRET: z.string().min(1),
   SLACK_APP_TOKEN: z.string().min(1),
   SLACK_BOT_TOKEN: z.string().min(1),
+  DATABASE_URL: z.string().min(1),
 });
 
 // Parse and validate environment variables
@@ -25,9 +25,9 @@ const env = envSchema.parse(process.env);
 export const config = {
   port: env.PORT,
   nodeEnv: env.NODE_ENV,
-  mongodbUri: env.MONGODB_URI,
   openaiApiKey: env.OPENAI_API_KEY,
   slackSigningSecret: env.SLACK_SIGNING_SECRET,
   slackAppToken: env.SLACK_APP_TOKEN,
   slackBotToken: env.SLACK_BOT_TOKEN,
+  pgDatabase: env.DATABASE_URL,
 };
