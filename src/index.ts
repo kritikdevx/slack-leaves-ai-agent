@@ -12,28 +12,36 @@ const app = new App({
 });
 
 app.message("", async ({ message, say }) => {
-  const ts = message.ts;
-  let text = "";
+  try {
+    const ts = message.ts;
+    let text = "";
 
-  if (message.type === "message" && !message.subtype) {
-    text = message.text || "";
-  }
+    if (message.type === "message" && !message.subtype) {
+      text = message.text || "";
+    }
+    if (!text) {
+      throw new Error("No text found");
+    }
 
-  let userResult;
-  if ("user" in message) {
-    userResult = await app.client.users.info({
-      token: process.env.SLACK_BOT_TOKEN,
-      user: message.user as string,
+    let userResult;
+
+    if ("user" in message) {
+      userResult = await app.client.users.info({
+        token: process.env.SLACK_BOT_TOKEN,
+        user: message.user as string,
+      });
+    }
+
+    logger.info("Message", { text, ts, userResult });
+
+    await leaveTask.trigger({
+      username: userResult?.user?.name || "anonymous",
+      message: text,
+      timestamp: ts,
     });
+  } catch (error) {
+    logger.error("Error", { error });
   }
-
-  logger.info("Message", { text, ts, userResult });
-
-  await leaveTask.trigger({
-    username: userResult?.user?.name || "Unknown",
-    message: text,
-    timestamp: ts,
-  });
 });
 
 (async () => {

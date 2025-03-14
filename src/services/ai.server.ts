@@ -74,6 +74,7 @@ export class AIService {
       message,
     });
 
+    // TODO: Validate the result
     return result.trim().toLowerCase() === "yes";
   }
 
@@ -201,6 +202,7 @@ export class AIService {
         timestamp: timestamp,
       });
 
+      // TODO: Validate the result
       return result;
     } catch (error) {
       console.error("LangChain Error:", error);
