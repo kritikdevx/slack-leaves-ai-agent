@@ -127,50 +127,55 @@ export class AIService {
         - \`duration_in_seconds\`: Duration of the leave in seconds (calculated from start_at and end_at)
         
         ### **Time Parsing Rules:**
-        1. **Out-of-Office Request Handling:**
-           - If timestamp is before 9:00 AM or after 6:00 PM on weekdays, assume request is for next working day
-           - If timestamp is Saturday after 1:00 PM, assume request is for Monday
-           - If timestamp is Sunday, assume request is for Monday unless specified otherwise
-           - If the day mentioned is a past date, assume it's for the next occurrence of that day
+        1. **Non-Working Days (Sunday & Post-Hours Saturday Handling):**
+          - If the message is received on **Sunday**, **shift the leave request to Monday**.
+          - If the message is received on **Saturday after 1:00 PM**, **shift the leave request to Monday**.
+          - If a specific date is mentioned and it falls on a **Sunday**, assume the request is for the next working day (Monday).
+
+        2. **Out-of-Office Request Handling:**
+          - If timestamp is before 9:00 AM or after 6:00 PM on weekdays, assume request is for next working day
+          - If timestamp is Saturday after 1:00 PM, assume request is for Monday
+          - If timestamp is Sunday, assume request is for Monday unless specified otherwise
+          - If the day mentioned is a past date, assume it's for the next occurrence of that day
         
-        2. **Default Times:**
-           - If no start time specified: use current timestamp
-           - If no end time specified: use 6:00 PM (weekdays) or 1:00 PM (Saturday)
-           - For "full day" leave: 9:00 AM to 6:00 PM (weekdays) or 9:00 AM to 1:00 PM (Saturday)
-           - For "half day - first half": 9:00 AM to 1:00 PM
-           - For "half day - second half": 1:00 PM to 6:00 PM (weekdays) or 1:00 PM (Saturday)
-           - For "few hours", "couple of hours": Assume 2 hours from current timestamp
+        3. **Default Times:**
+          - If no start time specified: use current timestamp
+          - If no end time specified: use 6:00 PM (weekdays) or 1:00 PM (Saturday)
+          - For "full day" leave: 9:00 AM to 6:00 PM (weekdays) or 9:00 AM to 1:00 PM (Saturday)
+          - For "half day - first half": 9:00 AM to 1:00 PM
+          - For "half day - second half": 1:00 PM to 6:00 PM (weekdays) or 1:00 PM (Saturday)
+          - For "few hours", "couple of hours": Assume 2 hours from current timestamp
         
-        3. **Type Classification Rules (Auto-Generated):**
-           - If message contains "sick", "unwell", "not feeling good", "fever", "doctor": type="SICK"
-           - If message contains "vacation", "holiday", "trip", "travel", "touring": type="VACATION"
-           - If message contains "wfh", "working from home", "remote work": type="WFH"
-           - If message contains "late", "delay", "delayed", "running late": type="RUNNING_LATE"
-           - If none of the above match: type="OTHER"
+        4. **Type Classification Rules (Auto-Generated):**
+          - If message contains "sick", "unwell", "not feeling good", "fever", "doctor": type="SICK"
+          - If message contains "vacation", "holiday", "trip", "travel", "touring": type="VACATION"
+          - If message contains "wfh", "working from home", "remote work": type="WFH"
+          - If message contains "late", "delay", "delayed", "running late": type="RUNNING_LATE"
+          - If none of the above match: type="OTHER"
         
         ### **Edge Cases Handling:**
         1. **Invalid or Non-Leave Messages:**
-           - If message doesn't relate to leave/absence/WFH (e.g., "Hello", "Good morning"), return a complete JSON object but mark it with type="OTHER"
-           - If message is too ambiguous to parse confidently, use type="OTHER"
+          - If message doesn't relate to leave/absence/WFH (e.g., "Hello", "Good morning"), return a complete JSON object but mark it with type="OTHER"
+          - If message is too ambiguous to parse confidently, use type="OTHER"
         
         2. **Time Ambiguity Resolution:**
-           - Ambiguous times like "11" should be interpreted as 11:00 AM
-           - "Tomorrow" refers to the next calendar day
-           - "Next week" refers to the same day next week
-           - For date ranges (e.g., "Jan 5-7"), set appropriate start_at and end_at times
+          - Ambiguous times like "11" should be interpreted as 11:00 AM
+          - "Tomorrow" refers to the next calendar day
+          - "Next week" refers to the same day next week
+          - For date ranges (e.g., "Jan 5-7"), set appropriate start_at and end_at times
         
         3. **Duration Calculation (Auto-Generated):**
-           - Calculate duration as the time difference between start_at and end_at
-           - For multi-day leaves, count only working hours (9AM-6PM weekdays, 9AM-1PM Saturdays)
-           - Maximum single leave request should not exceed 30 days
+          - Calculate duration as the time difference between start_at and end_at
+          - For multi-day leaves, count only working hours (9AM-6PM weekdays, 9AM-1PM Saturdays)
+          - Maximum single leave request should not exceed 30 days
         
         4. **Special Phrases Handling:**
-           - "Taking day off" → Full day leave (type="OTHER")
-           - "OOO for X hours" → Leave for X hours from current timestamp (type="OTHER")
-           - "Not available in morning/first half" → Half-day leave (9:00 AM – 1:00 PM) (type="OTHER")
-           - "Not available in afternoon/second half" → Half-day leave (1:00 PM – 6:00 PM) (type="OTHER")
-           - "Running late, will be in by X" → type="RUNNING_LATE", start_at="9:00 AM", end_at=specified time X
-           - "Leaving early at X" → type="OTHER", start_at=current time, end_at=specified time X
+          - "Taking day off" → Full day leave (type="OTHER")
+          - "OOO for X hours" → Leave for X hours from current timestamp (type="OTHER")
+          - "Not available in morning/first half" → Half-day leave (9:00 AM – 1:00 PM) (type="OTHER")
+          - "Not available in afternoon/second half" → Half-day leave (1:00 PM – 6:00 PM) (type="OTHER")
+          - "Running late, will be in by X" → type="RUNNING_LATE", start_at="9:00 AM", end_at=specified time X
+          - "Leaving early at X" → type="OTHER", start_at=current time, end_at=specified time X
         
         ### **Example Mappings:**
         - "Taking sick leave today" → RESULT: SICK type with Full day duration
