@@ -67,7 +67,7 @@ export class AIService {
 
     // Create a chain to process the message
     const isLeaveRelatedChain = promptTemplate
-      .pipe(this.gemini)
+      .pipe(this.openai35)
       .pipe(new StringOutputParser());
 
     // Check if the message is leave-related
@@ -195,7 +195,7 @@ export class AIService {
       const parser = new JsonOutputParser<z.infer<typeof leaveRequestSchema>>();
 
       // Create the chain
-      const leaveParsingChain = promptTemplate.pipe(this.gemini).pipe(parser);
+      const leaveParsingChain = promptTemplate.pipe(this.openai4o).pipe(parser);
 
       // Invoke the chain with the message and timestamp
       const result = await leaveParsingChain.invoke({
@@ -252,7 +252,7 @@ export class AIService {
       Generate ONLY raw SQL (ONE LINE) for: {input} (timestamp: {timestamp})
     `);
 
-    const result = await promptTemplate.pipe(this.gemini).invoke({
+    const result = await promptTemplate.pipe(this.openai4o).invoke({
       input: query,
       timestamp: timestamp,
     });

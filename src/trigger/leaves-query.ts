@@ -62,7 +62,7 @@ export const leavesQueryTask = schemaTask({
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `Here are the results: ${resultsString}`,
+              text: `Here are the results: \n\`\`\`\n${resultsString}\n\`\`\``,
             },
           },
         ],
