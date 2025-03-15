@@ -2,8 +2,9 @@ import { App } from "@slack/bolt";
 import { env } from "./utils/env";
 import logger from "./libs/logger";
 import { leaveTask } from "./trigger/leave";
+import { leavesQueryTask } from "./trigger/leaves-query";
 
-const app = new App({
+export const app = new App({
   token: env.SLACK_BOT_TOKEN,
   socketMode: true,
   appToken: env.SLACK_APP_TOKEN,
@@ -42,6 +43,25 @@ app.message("", async ({ message, say }) => {
   } catch (error) {
     logger.error("Error", { error });
   }
+});
+
+app.command("/query", async ({ command, context, body, ack, say }) => {
+  await ack();
+
+  const text = command.text;
+
+  const res = await say("Processing your query...");
+
+  const ts =
+    res?.ts ||
+    res?.message?.ts ||
+    `${new Date().getTime()}.${new Date().getMilliseconds()}`;
+
+  await leavesQueryTask.trigger({
+    channelId: body.channel_id,
+    query: text,
+    timestamp: ts,
+  });
 });
 
 (async () => {

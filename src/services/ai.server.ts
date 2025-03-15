@@ -5,6 +5,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { LeaveType } from "@prisma/client";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { prisma } from "./db.server";
 
 export class AIService {
   private openai35: ChatOpenAI;
@@ -208,5 +209,54 @@ export class AIService {
       console.error("LangChain Error:", error);
       return null;
     }
+  }
+
+  async naturalLanguageToSQL(query: string, timestamp: string) {
+    const promptTemplate = PromptTemplate.fromTemplate(`
+      You are a SQL generator for Prisma $queryRaw. Generate SINGLE-LINE SQL with NO FORMATTING.
+    
+      Schema:
+      Leave table schema:
+      - id (String)
+      - username (String)
+      - start_at (DateTime)
+      - end_at (DateTime)
+      - duration_in_seconds (Int)
+      - type type (SICK|VACATION|PERSONAL|WFH|OTHER)
+      
+      Format Rules:
+      1. STRICTLY NO NEWLINES (\\n) - NOT EVEN AT END
+      2. Single line only - clauses must be space-separated
+      3. Use double quotes for schema and table names (e.g., "public"."Leave")
+      4. Never use quotes for column names
+      5. Terminate without semicolon
+      6. Use ISO dates: 'YYYY-MM-DD'
+    
+      Examples:
+      1. Input: "Most leaves today"
+      Output: SELECT username, COUNT(*) as cnt FROM "public"."Leave" WHERE DATE(start_at) = CURRENT_DATE GROUP BY username ORDER BY cnt DESC LIMIT 1
+    
+      2. Input: "John's March sick leaves"
+      Output: SELECT SUM(duration_in_seconds)/3600 AS hours FROM "public"."Leave" WHERE username = 'john' AND type = 'SICK' AND start_at BETWEEN '2025-03-01' AND '2025-03-31'
+    
+      3. Input: "Today's leaves"
+      Output: SELECT * FROM "public"."Leave" WHERE DATE(start_at) = CURRENT_DATE
+    
+      Critical Enforcement:
+      - ANY \\n CHARACTER WILL CRASH THE SYSTEM
+      - Final character MUST be alphanumeric
+      - Replace all line breaks with spaces
+      - Never use backslashes
+      - Always use double quotes for schema and table names (e.g., "public"."Leave")
+    
+      Generate ONLY raw SQL (ONE LINE) for: {input} (timestamp: {timestamp})
+    `);
+
+    const result = await promptTemplate.pipe(this.gemini).invoke({
+      input: query,
+      timestamp: timestamp,
+    });
+
+    return result.content;
   }
 }
