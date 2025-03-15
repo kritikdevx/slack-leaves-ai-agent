@@ -8,6 +8,7 @@ const schema = z.object({
   channelId: z.string().min(1, "Channel ID is required"),
   query: z.string().min(1, "Query is required"),
   timestamp: z.string().min(1, "Timestamp is required"),
+  threadTs: z.string().min(1, "Thread Timestamp is required"),
 });
 
 const openaiService = new AIService();
@@ -26,19 +27,51 @@ export const leavesQueryTask = schemaTask({
       seconds * 1000 + microseconds / 1000
     ).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
+    logger.log("Timestamp", { timestamp });
+
     const result = await openaiService.naturalLanguageToSQL(
       payload.query,
       timestamp
     );
 
-    const rawQuery = result
-      .toString()
-      .replace(/\\n/g, "") // Remove newline characters
-      .replace(/\\"/g, '"'); // Replace escaped double quotes with actual double quotes
+    const rawQuery = result.toString().replace(/\\n/g, "").replace(/\\"/g, '"');
+
+    logger.log("Query", { rawQuery });
 
     const res = await prisma.$queryRawUnsafe(rawQuery).catch((err) => {
       logger.error("Error", { err });
-      return null;
+      return [];
     });
+
+    const results = Array.isArray(res) ? res : [];
+
+    // Add a replacer function to handle BigInt serialization
+    const replacer = (key: string, value: any) =>
+      typeof value === "bigint" ? value.toString() : value;
+
+    const resultsString = JSON.stringify(results, replacer);
+
+    logger.log("Results", { resultsString });
+
+    const response = await app.client.chat
+      .postMessage({
+        channel: payload.channelId,
+        thread_ts: payload.threadTs,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `Here are the results: ${resultsString}`,
+            },
+          },
+        ],
+      })
+      .catch((err) => {
+        logger.error("Error", { err });
+        return null;
+      });
+
+    logger.log("Response", { response });
   },
 });

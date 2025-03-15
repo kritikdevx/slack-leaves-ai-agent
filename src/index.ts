@@ -50,17 +50,15 @@ app.command("/query", async ({ command, context, body, ack, say }) => {
 
   const text = command.text;
 
-  const res = await say("Processing your query...");
+  const res = await say(`Processing your query: ${text}`);
 
-  const ts =
-    res?.ts ||
-    res?.message?.ts ||
-    `${new Date().getTime()}.${new Date().getMilliseconds()}`;
+  const ts = (res?.ts || res?.message?.ts) as string;
 
   await leavesQueryTask.trigger({
     channelId: body.channel_id,
     query: text,
     timestamp: ts,
+    threadTs: ts,
   });
 });
 
